@@ -52,6 +52,9 @@ class OpenaiWrapper:
 
     def query(self, prompt: str, config: QueryConfig = DEFAULT_QUERY_CONFIG, **kwargs) -> str:
         config.update(**kwargs)
+
+        # todo: check prompt length and response length
+
         response = self._query(prompt, config)
         return response.choices[0].text
 
@@ -110,6 +113,15 @@ def get_openai_wrapper(api_key=None) -> OpenaiWrapper:
         if api_key is None:
             message = "Please enter your OpenAI API key. You can find it at https://beta.openai.com/account/api-keys"
             api_key = getpass.getpass(message)
+            # save token to file, with user confirmation
+            res = input("Save token to file? [y/n]")
+            if res.lower() == 'y':
+                default_path = os.path.join(os.path.expanduser('~'), '.openai_api_key')
+                path = input(f"Enter path to save token to [{default_path}]: ")
+                if path == '':
+                    path = default_path
+                with open(path, 'w') as f:
+                    f.write(api_key)
 
     openai_wrapper = OpenaiWrapper(api_key)
     registry[api_key] = openai_wrapper
