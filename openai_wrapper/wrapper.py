@@ -8,6 +8,7 @@ from typing import Union, List
 import openai
 
 
+# todo: add the ability to override specific config values
 @dataclass
 class QueryConfig:
     model: str = "text-davinci-003"
@@ -58,6 +59,7 @@ class OpenaiWrapper:
         response = self._query(prompt, config)
         return response.choices[0].text
 
+    # make a query to openai_wrapper that uses the cheaper - curie - model
     def query_cheap(self, prompt: str, **kwargs) -> str:
         if "model" in kwargs:
             raise ValueError("For cheap query model cannot be overridden")
