@@ -32,6 +32,7 @@ class OpenaiWrapper:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
+        self.api.api_key = self.api_key
 
     def _query(self, prompt, config):
         # make sure api_key is correct
@@ -81,6 +82,18 @@ possible_key_locations = [
 ]
 
 
+def validate_api_key(api_key: str):
+    old_key = openai.api_key
+    try:
+        openai.api_key = api_key
+        openai.Engine.list()
+        openai.api_key = old_key
+        return True
+    except:
+        openai.api_key = old_key
+        return False
+
+
 def get_openai_wrapper(api_key=None) -> OpenaiWrapper:
     if api_key is None:
         api_key = os.environ.get("OPENAI_API_KEY")
@@ -113,9 +126,13 @@ def get_openai_wrapper(api_key=None) -> OpenaiWrapper:
                                 api_key = data.strip()
                                 break
         if api_key is None:
-            message = "Please enter your OpenAI API key. You can find it at https://beta.openai.com/account/api-keys"
-            api_key = getpass.getpass(message)
+            while not validate_api_key(api_key):
+                message = "Please enter your OpenAI API key. You can find it at https://beta.openai.com/account/api-keys: "
+                api_key = getpass.getpass(message)
+                if not validate_api_key(api_key):
+                    print("Invalid API key. Please try again.")
             # save token to file, with user confirmation
+            print("Key received")
             res = input("Save token to file? [y/n]")
             if res.lower() == 'y':
                 default_path = os.path.join(os.path.expanduser('~'), '.openai_api_key')
