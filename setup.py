@@ -5,7 +5,7 @@ from pathlib import Path
 from setuptools import setup
 
 setup(
-    name='openai_wrapper',
+    name='openai-wrapper',
     description='OOP wrapper and utils for OpenAI API',
     version='0.0.1',
     packages=['openai_wrapper'],
