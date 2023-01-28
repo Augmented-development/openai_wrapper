@@ -2,6 +2,7 @@ import getpass
 import json
 import os
 import os.path
+from copy import copy
 from dataclasses import dataclass
 from typing import Union, List
 
@@ -52,7 +53,10 @@ class OpenaiWrapper:
 
         return response
 
-    def query(self, prompt: str, config: QueryConfig = DEFAULT_QUERY_CONFIG, **kwargs) -> str:
+    def query(self, prompt: str, config: QueryConfig = None, **kwargs) -> str:
+        if config is None:
+            config = DEFAULT_QUERY_CONFIG
+        config = copy(config)
         config.update(**kwargs)
 
         # todo: check prompt length and response length
@@ -65,6 +69,21 @@ class OpenaiWrapper:
         if "model" in kwargs:
             raise ValueError("For cheap query model cannot be overridden")
         return self.query(prompt, model="text-curie-001", **kwargs)
+
+    def edit(self, prompt, instruction, config: QueryConfig = DEFAULT_QUERY_CONFIG, **kwargs):
+        if config is None:
+            config = DEFAULT_QUERY_CONFIG
+        config = copy(config)
+        config.update(**kwargs)
+        response = self.api.Edit.create(
+            model="text-davinci-edit-001",
+            input=prompt,
+            instruction=instruction,
+            temperature=config.temperature,
+            n=config.n,
+            top_p=config.top_p,
+        )
+        return response.data[0].text
 
 
 registry = {}
