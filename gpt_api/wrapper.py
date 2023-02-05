@@ -28,7 +28,7 @@ class QueryConfig:
 DEFAULT_QUERY_CONFIG = QueryConfig()
 
 
-class OpenaiWrapper:
+class GPTApi:
     api = openai
 
     def __init__(self, api_key: str):
@@ -60,6 +60,11 @@ class OpenaiWrapper:
         config.update(**kwargs)
 
         # todo: check prompt length and response length
+        # from transformers import AutoTokenizer
+        # gpt2_tokenizer = AutoTokenizer.from_pretrained("gpt2", use_fast=True)
+        #
+        # text_in = "bla bla"
+        # tokens = gpt2_tokenizer.tokenize(text_in)
 
         response = self._query(prompt, config)
         return response.choices[0].text
@@ -113,9 +118,8 @@ def validate_api_key(api_key: str):
         return False
 
 
-def get_openai_wrapper(api_key=None) -> OpenaiWrapper:
-    if api_key is None:
-        api_key = os.environ.get("OPENAI_API_KEY")
+def discover_api_key():
+    api_key = os.environ.get("OPENAI_API_KEY")
     # if the object already exists, return it
     if api_key in registry:
         return registry[api_key]
@@ -160,7 +164,12 @@ def get_openai_wrapper(api_key=None) -> OpenaiWrapper:
                     path = default_path
                 with open(path, 'w') as f:
                     f.write(api_key)
+    return api_key
 
-    openai_wrapper = OpenaiWrapper(api_key)
+
+def get_openai_wrapper(api_key=None) -> GPTApi:
+    if api_key is None:
+        api_key = discover_api_key()
+    openai_wrapper = GPTApi(api_key)
     registry[api_key] = openai_wrapper
     return openai_wrapper
