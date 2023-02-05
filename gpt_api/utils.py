@@ -1,104 +1,15 @@
 import getpass
 import json
 import os
-import os.path
-from copy import copy
-from dataclasses import dataclass
-from typing import Union, List
 
 import openai
 
-
-# todo: add the ability to override specific config values
-@dataclass
-class QueryConfig:
-    model: str = "text-davinci-003"
-    max_tokens: int = 512
-    temperature: float = 0.9
-    top_p: float = 1.0
-    n: int = 1
-    stream: bool = False
-    stop: Union[str, List[str]] = None
-    user: str = getpass.getuser()
-
-    def update(self, **kwargs):
-        self.__dict__.update(kwargs)
-
-
-DEFAULT_QUERY_CONFIG = QueryConfig()
-
-
-class GPTApi:
-    api = openai
-
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.api.api_key = self.api_key
-
-    def _query(self, prompt, config):
-        # make sure api_key is correct
-        self.api.api_key = self.api_key
-
-        response = self.api.Completion.create(
-            model=config.model,
-            prompt=prompt,
-            max_tokens=config.max_tokens,
-            temperature=config.temperature,
-            top_p=config.top_p,
-            n=config.n,
-            stream=config.stream,
-            stop=config.stop,
-            user=config.user,
-        )
-
-        return response
-
-    def query(self, prompt: str, config: QueryConfig = None, **kwargs) -> str:
-        if config is None:
-            config = DEFAULT_QUERY_CONFIG
-        config = copy(config)
-        config.update(**kwargs)
-
-        # todo: check prompt length and response length
-        # from transformers import AutoTokenizer
-        # gpt2_tokenizer = AutoTokenizer.from_pretrained("gpt2", use_fast=True)
-        #
-        # text_in = "bla bla"
-        # tokens = gpt2_tokenizer.tokenize(text_in)
-
-        response = self._query(prompt, config)
-        return response.choices[0].text
-
-    # make a query to openai_wrapper that uses the cheaper - curie - model
-    def query_cheap(self, prompt: str, **kwargs) -> str:
-        if "model" in kwargs:
-            raise ValueError("For cheap query model cannot be overridden")
-        return self.query(prompt, model="text-curie-001", **kwargs)
-
-    def edit(self, prompt, instruction, config: QueryConfig = DEFAULT_QUERY_CONFIG, **kwargs):
-        if config is None:
-            config = DEFAULT_QUERY_CONFIG
-        config = copy(config)
-        config.update(**kwargs)
-        response = self.api.Edit.create(
-            model="text-davinci-edit-001",
-            input=prompt,
-            instruction=instruction,
-            temperature=config.temperature,
-            n=config.n,
-            top_p=config.top_p,
-        )
-        return response.data[0].text
-
-
 registry = {}
-
 possible_filenames = [
     '.openai_api_key',
     'secrets.json',
     'secrets.txt',
 ]
-
 possible_key_locations = [
     os.path.expanduser('~'),
     os.path.abspath(os.path.dirname(__file__)),
@@ -165,11 +76,3 @@ def discover_api_key():
                 with open(path, 'w') as f:
                     f.write(api_key)
     return api_key
-
-
-def get_openai_wrapper(api_key=None) -> GPTApi:
-    if api_key is None:
-        api_key = discover_api_key()
-    openai_wrapper = GPTApi(api_key)
-    registry[api_key] = openai_wrapper
-    return openai_wrapper
