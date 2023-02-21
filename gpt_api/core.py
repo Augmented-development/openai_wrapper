@@ -9,9 +9,9 @@ from .utils import discover_api_key
 
 
 class QueryType(Enum):
-    COMPLETE = 1
-    INSERT = 2
-    EDIT = 3
+    COMPLETE = "complete"
+    INSERT = "insert"
+    EDIT = "edit"
 
 
 DEV_MODE = os.environ.get("GPT_API_DEV_MODE", False)
