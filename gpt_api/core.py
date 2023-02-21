@@ -63,8 +63,9 @@ class GPTApi:
             raise ValueError(f"{self.INSERT_TOKEN} must be in the prompt exactly once")
         return self.complete(prompt, model=model, config=config, **kwargs)
 
-    def complete(self, prompt, model="text-davinci-003", config: QueryConfig = DEFAULT_QUERY_CONFIG, **kwargs):
-        with self:
+    def complete(self, prompt, config: QueryConfig = DEFAULT_QUERY_CONFIG, model="text-davinci-003", **kwargs):
+
+        with self:  # set api token
             if config is None:
                 config = DEFAULT_QUERY_CONFIG
             config = copy(config)
@@ -80,11 +81,11 @@ class GPTApi:
                 stop=config.stop,
                 user=config.user,
             )
-            return response.data[0].text
+            return response.choices[0].text
 
-    def edit(self, prompt, instruction, model="text-davinci-edit-001", config: QueryConfig = DEFAULT_QUERY_CONFIG,
+    def edit(self, prompt, instruction, config: QueryConfig = DEFAULT_QUERY_CONFIG, model="text-davinci-edit-001",
              **kwargs):
-        with self:
+        with self:  # set api token
             if config is None:
                 config = DEFAULT_QUERY_CONFIG
             config = copy(config)
@@ -101,10 +102,10 @@ class GPTApi:
                 stop=config.stop,
                 user=config.user,
             )
-            return response.data[0].text
+            return response.choices[0].text
 
     # old
-    def query(self, prompt: str, query_type: QueryType = QueryType.COMPLETE, config: QueryConfig = DEFAULT_QUERY_CONFIG,
+    def query(self, prompt: str, config: QueryConfig = DEFAULT_QUERY_CONFIG, query_type: QueryType = QueryType.COMPLETE,
               **kwargs) -> str:
         query_type = QueryType(query_type)
         if query_type == QueryType.COMPLETE:
