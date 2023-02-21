@@ -3,7 +3,8 @@
 """
 
 # todo: add the ability to override specific config values
-from core import GPTApi, QueryType
+from .core import GPTApi, QueryType
+from .query_config import QueryConfig, DEFAULT_QUERY_CONFIG
 
 
 def get_gpt_api(api_key=None) -> GPTApi:
@@ -34,4 +35,16 @@ def gpt_edit(prompt, instruction, config, api_key=None, **kwargs):
 
 def gpt_insert(prompt, config, api_key=None, **kwargs):
     api = get_gpt_api(api_key)
-    return api.insert(prompt, config, **kwargs)
+    return api.insert(prompt, config=config, **kwargs)
+
+
+def query_cheap(prompt, config: QueryConfig = DEFAULT_QUERY_CONFIG, query_type=QueryType.COMPLETE, api_key=None,
+                **kwargs):
+    api = get_gpt_api(api_key)
+    api.query_cheap(prompt, config=config, query_type=query_type, **kwargs)
+
+
+def query_code(prompt, config: QueryConfig = DEFAULT_QUERY_CONFIG, query_type=QueryType.COMPLETE, api_key=None,
+               **kwargs):
+    api = get_gpt_api(api_key)
+    api.query_code(prompt, config=config, query_type=query_type, **kwargs)

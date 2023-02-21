@@ -4,8 +4,8 @@ from enum import Enum
 
 import openai
 
-from query_config import QueryConfig, DEFAULT_QUERY_CONFIG
-from utils import discover_api_key
+from .query_config import QueryConfig, DEFAULT_QUERY_CONFIG
+from .utils import discover_api_key
 
 
 class QueryType(Enum):
@@ -117,14 +117,28 @@ class GPTApi:
             raise ValueError(f"Unknown query_type: {query_type}")
 
     # make a query to openai_wrapper that uses the cheaper - curie - model
-    def query_cheap(self, prompt: str, query_type: QueryType = QueryType.COMPLETE,
-                    config: QueryConfig = DEFAULT_QUERY_CONFIG, **kwargs) -> str:
+    def query_cheap(self, prompt: str, config: QueryConfig = DEFAULT_QUERY_CONFIG,
+                    query_type: QueryType = QueryType.COMPLETE,
+                    **kwargs) -> str:
         query_type = QueryType(query_type)
         if query_type == QueryType.COMPLETE:
             return self.complete(prompt, config=config, model="text-curie-001", **kwargs)
-        elif query_type == QueryType.INSERT:
+        elif query_type == QueryType.INSERT:  # actually - not cheap? Show warning? #
             return self.insert(prompt, config=config, model="text-davinci-insert-002", **kwargs)
-        elif query_type == QueryType.EDIT:
+        elif query_type == QueryType.EDIT:  # actually - not cheap? Show warning? Or is this free while in beta?
             return self.edit(prompt, config=config, model="text-davinci-edit-001", **kwargs)
+        else:
+            raise ValueError(f"Unknown query_type: {query_type}")
+
+    def query_code(self, prompt: str, config: QueryConfig = DEFAULT_QUERY_CONFIG,
+                   query_type: QueryType = QueryType.COMPLETE,
+                   **kwargs) -> str:
+        query_type = QueryType(query_type)
+        if query_type == QueryType.COMPLETE:
+            return self.complete(prompt, config=config, model="code-davinci-002", **kwargs)
+        elif query_type == QueryType.INSERT:
+            return self.insert(prompt, config=config, model="code-davinci-002", **kwargs)
+        elif query_type == QueryType.EDIT:
+            return self.edit(prompt, config=config, model="code-davinci-edit-001", **kwargs)
         else:
             raise ValueError(f"Unknown query_type: {query_type}")
