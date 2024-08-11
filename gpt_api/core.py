@@ -6,7 +6,7 @@ import openai
 
 from .query_config import QueryConfig, DEFAULT_QUERY_CONFIG
 from .utils import discover_api_key
-
+from defaultenv import ENVCD as env
 
 class QueryType(Enum):
     COMPLETE = "complete"
@@ -14,7 +14,7 @@ class QueryType(Enum):
     EDIT = "edit"
 
 
-DEV_MODE = os.environ.get("GPT_API_DEV_MODE", False)
+DEV_MODE = env.GPT_API_DEV_MODE
 
 
 class GPTApi:
